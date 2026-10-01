@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>nonalacorruption — Comprendre, reconnaître et refuser la corruption</title>
+<meta name="description" content="Ressources pédagogiques, outils de réflexion et analyses pour comprendre la corruption, la reconnaître et la refuser. Pour les élèves, les enseignants et tous les citoyens.">
+<meta property="og:title" content="nonalacorruption">
+<meta property="og:description" content="Comprendre, reconnaître et refuser la corruption.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&display=swap" rel="stylesheet">
+
+<!--
+  Emplacement publicitaire (optionnel) : collez ici le script Google AdSense
+  fourni après validation de votre compte, dans le <head>.
+-->
+
+<style>
+  :root {
+    --paper: #ECEEE8;
+    --sheet: #F8F9F5;
+    --ink: #1A2540;
+    --stamp: #B3261E;
+    --muted: #59627A;
+    --line: #C6CAC0;
+    --display: "Bricolage Grotesque", "Helvetica Neue", Arial, sans-serif;
+    --text: "Newsreader", Georgia, "Times New Roman", serif;
+    --typed: ui-monospace, "Courier New", Courier, monospace;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--text);
+    font-size: 1.125rem;
+    line-height: 1.6;
+  }
+  h1, h2, h3 { font-family: var(--display); line-height: 1.1; margin: 0; letter-spacing: -0.02em; }
+  h1 { font-size: clamp(2.5rem, 6.4vw, 4.6rem); font-weight: 800; }
+  h2 { font-size: clamp(1.8rem, 3.8vw, 2.7rem); font-weight: 700; }
+  h3 { font-size: 1.25rem; font-weight: 700; letter-spacing: -0.01em; }
+  p { margin: 0 0 1em; max-width: 62ch; }
+  a { color: inherit; }
+
+  :focus-visible { outline: 3px solid var(--stamp); outline-offset: 3px; border-radius: 2px; }
+
+  .wrap { width: min(1120px, 100% - 2.5rem); margin-inline: auto; }
+  section { padding-block: clamp(3.5rem, 8vw, 6rem); }
+
+  /* ---------- En-tête ---------- */
+  .top { padding-block: 1.25rem; }
+  .top .wrap { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .75rem 2rem; }
+  .wordmark { font-family: var(--display); font-weight: 800; font-size: 1.35rem; letter-spacing: -0.03em; text-decoration: none; }
+  .top nav { display: flex; flex-wrap: wrap; gap: .25rem 1.5rem; font-family: var(--display); font-weight: 500; font-size: 1rem; }
+  .top nav a { text-decoration: none; padding-block: .25rem; border-bottom: 2px solid transparent; }
+  .top nav a:hover { border-bottom-color: var(--stamp); }
+
+  /* ---------- Boutons ---------- */
+  .btn {
+    display: inline-block;
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 1rem;
+    line-height: 1.2;
+    padding: .8rem 1.3rem;
+    background: var(--ink);
+    color: var(--paper);
+    border: 2px solid var(--ink);
+    border-radius: 4px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color .15s, border-color .15s, color .15s;
+  }
+  .btn:hover { background: var(--stamp); border-color: var(--stamp); }
+  .btn.ghost { background: transparent; color: var(--ink); }
+  .btn.ghost:hover { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+
+  /* ---------- Hero ---------- */
+  .hero { padding-top: clamp(1.5rem, 4vw, 3rem); }
+  .hero-grid { display: grid; grid-template-columns: 1.05fr .95fr; gap: clamp(2rem, 5vw, 4.5rem); align-items: center; }
+  .lead { font-size: 1.3rem; margin-top: 1.5rem; color: var(--ink); }
+  .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem 1.75rem; margin-top: 2rem; }
+  .actions .textlink { font-family: var(--display); font-weight: 500; }
+
+  .hero-doc { display: flex; flex-direction: column; align-items: flex-start; gap: 1.1rem; }
+  .sheet {
+    position: relative;
+    width: 100%;
+    margin: 0;
+    padding: 1.7rem 1.6rem 2.2rem;
+    background: var(--sheet);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    box-shadow: 0 1px 0 var(--line), 0 18px 34px -22px rgba(26, 37, 64, .55);
+    font-family: var(--typed);
+    font-size: .95rem;
+    line-height: 1.75;
+    transform: rotate(-1.1deg);
+  }
+  .sheet .doc-head { font-weight: 700; margin-bottom: 1.1rem; padding-bottom: .6rem; border-bottom: 1px dashed var(--line); }
+  .sheet p { margin-bottom: .85em; max-width: none; }
+
+  .redact {
+    background: linear-gradient(var(--ink), var(--ink)) no-repeat right center / 100% 100%;
+    color: var(--ink);
+    padding: .05em .22em;
+    margin-inline: -.05em;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+    transition: background-size .8s cubic-bezier(.7, 0, .2, 1);
+    transition-delay: var(--d, 0s);
+  }
+  .hero-doc.revealed .redact {
+    background-size: 0% 100%;
+    text-decoration: underline;
+    text-decoration-color: var(--stamp);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 3px;
+  }
+
+  .stamp {
+    position: absolute;
+    right: 1rem;
+    bottom: .6rem;
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: 2.6rem;
+    line-height: 1;
+    letter-spacing: .02em;
+    color: var(--stamp);
+    border: 4px solid var(--stamp);
+    border-radius: 6px;
+    padding: .1em .35em;
+    opacity: 0;
+    transform: rotate(-12deg) scale(1.7);
+    mix-blend-mode: multiply;
+    transition: opacity .2s, transform .28s cubic-bezier(.2, 1.5, .4, 1);
+    pointer-events: none;
+  }
+  .hero-doc.revealed .stamp { opacity: .92; transform: rotate(-12deg) scale(1); transition-delay: .85s; }
+  .sheet-note { font-size: .95rem; color: var(--muted); margin: 0; }
+
+  /* ---------- Reconnaître ---------- */
+  .split { display: grid; grid-template-columns: .8fr 1.2fr; gap: clamp(2rem, 5vw, 4.5rem); align-items: start; }
+  .split h2 { margin-bottom: 1.1rem; }
+  .forms details { border-top: 1px solid var(--line); }
+  .forms details:last-child { border-bottom: 1px solid var(--line); }
+  .forms summary {
+    list-style: none;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.15rem 0;
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 1.3rem;
+    letter-spacing: -0.01em;
+  }
+  .forms summary::-webkit-details-marker { display: none; }
+  .forms summary::after { content: "+"; font-size: 1.7rem; font-weight: 500; color: var(--stamp); line-height: 1; }
+  .forms details[open] summary::after { content: "\2212"; }
+  .forms .body { padding: 0 0 1.3rem; }
+  .forms .body p { margin-bottom: .7em; }
+  .forms .ex { color: var(--muted); }
+  .forms .ex strong { color: var(--ink); font-family: var(--display); font-weight: 700; }
+
+  /* ---------- Réfléchir (bande sombre) ---------- */
+  .band { background: var(--ink); color: var(--paper); }
+  .band .intro { margin-bottom: 2rem; }
+  .band .intro p { color: #D5D9E4; }
+  .cases { display: flex; flex-wrap: wrap; gap: .75rem; margin: 0 0 1.75rem; padding: 0; list-style: none; }
+  .case {
+    font-family: var(--display);
+    font-weight: 500;
+    font-size: 1rem;
+    text-align: left;
+    color: var(--paper);
+    background: transparent;
+    border: 2px solid #5A6788;
+    border-radius: 4px;
+    padding: .7rem 1rem;
+    cursor: pointer;
+    transition: background-color .15s, border-color .15s, color .15s;
+  }
+  .case:hover { border-color: var(--paper); }
+  .case[aria-pressed="true"] { background: var(--paper); color: var(--ink); border-color: var(--paper); }
+  .band :focus-visible { outline-color: var(--paper); }
+  .verdict { border-left: 4px solid var(--stamp); padding: .4rem 0 .4rem 1.4rem; max-width: 66ch; min-height: 7rem; }
+  .verdict p { margin-bottom: .8em; }
+  .verdict .rule { font-family: var(--display); font-weight: 700; font-size: 1.3rem; line-height: 1.3; }
+  .verdict .ref { color: #B7BDCD; font-style: italic; }
+  .verdict.empty { color: #B7BDCD; }
+
+  /* ---------- Ressources ---------- */
+  .catalogue { list-style: none; padding: 0; margin: 2.25rem 0 0; }
+  .row {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    align-items: center;
+    gap: .75rem 2rem;
+    padding: 1.6rem 0;
+    border-top: 1px solid var(--line);
+  }
+  .row:last-child { border-bottom: 1px solid var(--line); }
+  .row h3 { margin-bottom: .3rem; }
+  .row p { margin: 0; color: var(--muted); }
+  .prix { font-family: var(--display); font-weight: 800; font-size: 1.6rem; white-space: nowrap; }
+  .prix small { font-weight: 500; font-size: 1rem; color: var(--muted); }
+
+  .free {
+    margin-top: 3rem;
+    padding: 1.8rem;
+    background: var(--sheet);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem 2.5rem;
+    align-items: center;
+  }
+  .free p { margin: .5rem 0 0; }
+  .free form { display: flex; flex-wrap: wrap; gap: .75rem; }
+  .free label { position: absolute; left: -9999px; }
+  .free input[type="email"] {
+    flex: 1 1 14rem;
+    font: inherit;
+    font-size: 1rem;
+    padding: .8rem 1rem;
+    border: 2px solid var(--ink);
+    border-radius: 4px;
+    background: #fff;
+    color: var(--ink);
+  }
+  .free .msg { flex-basis: 100%; margin: 0; min-height: 1.5em; font-size: 1rem; color: var(--muted); }
+
+  /* ---------- Soutenir ---------- */
+  .amounts { display: flex; flex-wrap: wrap; gap: .6rem; margin: 1.5rem 0 1.25rem; padding: 0; list-style: none; }
+  .amount {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 1.1rem;
+    min-width: 4.5rem;
+    padding: .65rem 1rem;
+    color: var(--ink);
+    background: transparent;
+    border: 2px solid var(--ink);
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .amount:hover { background: var(--sheet); }
+  .amount[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+
+  /* ---------- Financement ---------- */
+  .funding { border-top: 1px solid var(--line); }
+  .funding h2 { margin-bottom: 2rem; }
+  .cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem 2.5rem; }
+  .cols h3 { margin-bottom: .5rem; }
+  .cols p { margin: 0; color: var(--muted); }
+
+  /* ---------- Pied de page ---------- */
+  footer { padding-block: 2.5rem 3rem; border-top: 1px solid var(--line); font-size: 1rem; color: var(--muted); }
+  footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1rem 3rem; }
+  footer p { margin: 0; max-width: 46ch; }
+  footer .wordmark { color: var(--ink); font-size: 1.15rem; }
+
+  /* ---------- Adaptation mobile ---------- */
+  @media (max-width: 860px) {
+    .hero-grid, .split, .free, .cols { grid-template-columns: 1fr; }
+    .sheet { transform: none; }
+    .row { grid-template-columns: 1fr auto; }
+    .row > div { grid-column: 1 / -1; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .redact, .stamp, .btn, .case { transition: none; }
+  }
+</style>
+</head>
+
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="wordmark" href="#">nonalacorruption</a>
+    <nav aria-label="Navigation principale">
+      <a href="#reconnaitre">Reconnaître</a>
+      <a href="#reflechir">Réfléchir</a>
+      <a href="#ressources">Ressources</a>
+      <a href="#soutenir">Soutenir</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <!-- ===== Hero ===== -->
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <h1>La corruption prospère dans le silence.</h1>
+        <p class="lead">nonalacorruption aide élèves, enseignants et citoyens à comprendre la corruption, à la reconnaître et à la refuser. Des ressources pédagogiques et des outils de réflexion, dans un projet citoyen d'éducation à l'intégrité.</p>
+        <div class="actions">
+          <a class="btn" href="#ressources">Voir les ressources</a>
+          <a class="textlink" href="#reflechir">Faire le test de Kant</a>
+        </div>
+      </div>
+
+      <div class="hero-doc" id="heroDoc">
+        <figure class="sheet" aria-labelledby="sheetNote">
+          <p class="doc-head">Note confidentielle, à ne pas diffuser</p>
+          <p><strong>Objet :</strong> construction de l'école du quartier nord.</p>
+          <p>Le marché a été attribué à <span class="redact" style="--d:0s">la société Delta-Bâtiment</span> pour <span class="redact" style="--d:.15s">480 millions</span>, sans appel d'offres.</p>
+          <p>Le dossier a été accéléré après la remise d'une enveloppe à <span class="redact" style="--d:.3s">M. le directeur des services techniques</span>.</p>
+          <p>Les travaux n'ont jamais commencé. Les élèves attendent toujours leur classe.</p>
+          <span class="stamp" aria-hidden="true">NON</span>
+        </figure>
+        <button class="btn ghost" id="revealBtn" type="button" aria-pressed="false">Lever le voile</button>
+        <p class="sheet-note" id="sheetNote">Document fictif, à des fins pédagogiques.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Reconnaître ===== -->
+  <section id="reconnaitre">
+    <div class="wrap split">
+      <div>
+        <h2>Quatre visages de la corruption</h2>
+        <p>Elle ne ressemble pas toujours à une valise de billets. Apprenez à la reconnaître sous ses formes les plus ordinaires.</p>
+      </div>
+
+      <div class="forms">
+        <details>
+          <summary>Le pot-de-vin</summary>
+          <div class="body">
+            <p>Offrir ou accepter de l'argent ou un cadeau pour obtenir une décision, un document ou un passe-droit.</p>
+            <p class="ex"><strong>Dans la vie courante :</strong> la « petite enveloppe » pour qu'un dossier avance plus vite.</p>
+          </div>
+        </details>
+        <details>
+          <summary>Le détournement</summary>
+          <div class="body">
+            <p>Utiliser pour soi des fonds ou des biens destinés à tous.</p>
+            <p class="ex"><strong>Dans la vie courante :</strong> le matériel d'un établissement public qui disparaît, ou une subvention dépensée à d'autres fins.</p>
+          </div>
+        </details>
+        <details>
+          <summary>Le favoritisme et le népotisme</summary>
+          <div class="body">
+            <p>Choisir selon les liens, et non selon la règle ou le mérite.</p>
+            <p class="ex"><strong>Dans la vie courante :</strong> un poste ou un marché donné à un proche, sans concours ni appel d'offres.</p>
+          </div>
+        </details>
+        <details>
+          <summary>Le trafic d'influence</summary>
+          <div class="body">
+            <p>Faire payer son pouvoir ou ses relations pour obtenir une décision favorable.</p>
+            <p class="ex"><strong>Dans la vie courante :</strong> l'« ami bien placé » qui règle un problème contre un service rendu.</p>
+          </div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Réfléchir ===== -->
+  <section class="band" id="reflechir">
+    <div class="wrap">
+      <div class="intro">
+        <h2>Et si tout le monde faisait pareil ?</h2>
+        <p style="margin-top:1rem">Kant propose un test simple : pour juger un geste, imaginez que la règle qui le guide devienne une loi pour tous. Choisissez une situation.</p>
+      </div>
+      <ul class="cases" id="cases"></ul>
+      <div class="verdict empty" id="verdict" aria-live="polite">
+        <p>Le raisonnement s'affichera ici.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Ressources ===== -->
+  <section id="ressources">
+    <div class="wrap">
+      <h2>Ressources pour comprendre et enseigner</h2>
+      <p style="margin-top:1rem">Pensées pour la classe de philosophie, utiles à tout lecteur qui veut aller au fond du sujet.</p>
+
+      <ul class="catalogue" id="catalogue"></ul>
+
+      <div class="free">
+        <div>
+          <h3>Commencez gratuitement</h3>
+          <p>Recevez la fiche « Reconnaître la corruption » et les nouvelles ressources par e-mail. Désinscription en un clic.</p>
+        </div>
+        <form id="newsletter" novalidate>
+          <label for="email">Adresse e-mail</label>
+          <input id="email" name="email" type="email" placeholder="vous@exemple.com" autocomplete="email" required>
+          <button class="btn" type="submit">Recevoir la fiche</button>
+          <p class="msg" id="newsletterMsg" role="status"></p>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Soutenir ===== -->
+  <section id="soutenir" style="padding-top:0">
+    <div class="wrap split">
+      <div>
+        <h2>Soutenir le projet</h2>
+        <p>Les dons financent de nouvelles ressources, publiées gratuitement pour les élèves.</p>
+      </div>
+      <div>
+        <p>Choisissez un montant :</p>
+        <ul class="amounts" id="amounts"></ul>
+        <a class="btn" id="donLink" href="#">Faire un don</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Financement ===== -->
+  <section class="funding">
+    <div class="wrap">
+      <h2>Comment ce site est financé</h2>
+      <div class="cols">
+        <div>
+          <h3>Les ventes</h3>
+          <p>Les fiches, les packs et les abonnements financent le travail de rédaction et l'hébergement du site.</p>
+        </div>
+        <div>
+          <h3>Les dons</h3>
+          <p>Les dons permettent de garder une partie des ressources en accès libre pour tous les élèves.</p>
+        </div>
+        <div>
+          <h3>Les partenaires</h3>
+          <p>Nous refusons tout financement d'une personne ou d'une entreprise liée à une affaire de corruption connue. La liste de nos partenaires sera publiée sur cette page.</p>
+        </div>
+      </div>
+      <!--
+        Emplacement publicitaire (optionnel) :
+        collez ici le bloc d'annonce AdSense (<ins class="adsbygoogle" ...>) une fois votre compte validé.
+      -->
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div>
+      <a class="wordmark" href="#">nonalacorruption</a>
+      <p style="margin-top:.5rem">© <span id="year"></span> nonalacorruption. Un projet citoyen d'éducation à l'intégrité.</p>
+    </div>
+    <p>Si vous êtes témoin ou victime de corruption, adressez-vous aux institutions ou aux associations compétentes de votre pays.</p>
+    <p>Contact : <a id="contactLink" href="#"></a></p>
+  </div>
+</footer>
+
+<script>
+/* ==========================================================
+   CONFIGURATION : modifiez uniquement cette section
+   ========================================================== */
+const CONFIG = {
+  devise: "FCFA",              // ex. "€", "FCFA", "$"
+  email: "1nonalacorruption@gmail.com",  // adresse de contact et de réception des inscriptions
+  formulaireUrl: "https://formspree.io/f/mppwnkbo",  // Formspree. Si vide, l'inscription ouvre la messagerie du visiteur vers l'adresse ci-dessus.
+  dons: [500, 1000, 2000, 5000], // montants proposés
+  liens: {                     // remplacez "#" par vos liens de paiement (Stripe, PayPal, Wave, Orange Money, Gumroad...)
+    don: "https://pay.wave.com/m/M_ci_Yf39pO0NnmrE/c/ci/?amount=",   // le montant choisi est ajouté automatiquement
+    dissertation: "https://pay.wave.com/m/M_ci_Yf39pO0NnmrE/c/ci/?amount=500",
+    commentaires: "https://pay.wave.com/m/M_ci_Yf39pO0NnmrE/c/ci/?amount=800",
+    seance: "https://pay.wave.com/m/M_ci_Yf39pO0NnmrE/c/ci/?amount=1000",
+    abonnement: "https://pay.wave.com/m/M_ci_Yf39pO0NnmrE/c/ci/?amount=1200"
+  },
+  catalogue: [
+    { cle: "dissertation", titre: "Fiche de dissertation : la corruption est-elle une fatalité ?",
+      desc: "Analyse du sujet, problématique, plan détaillé et références philosophiques, pour les élèves de Terminale.",
+      prix: 500, action: "Acheter" },
+    { cle: "commentaires", titre: "Pack de commentaires de texte",
+      desc: "Extraits guidés sur la justice, le pouvoir et le bien commun, avec pistes d'analyse pour chaque texte.",
+      prix: 800, action: "Acheter" },
+    { cle: "seance", titre: "Séance clé en main pour la classe",
+      desc: "Déroulé, textes, questions de discussion et grille d'évaluation pour un atelier sur la corruption.",
+      prix: 1000, action: "Acheter" },
+    { cle: "abonnement", titre: "Accès complet pendant un an",
+      desc: "Toutes les ressources du site, y compris celles publiées pendant l'année.",
+      prix: 1200, suffixe: "/ an", action: "S'abonner" }
+  ]
+};
+
+/* ---------- Utilitaires ---------- */
+const nbsp = "\u00A0";
+const fmt = (n) => n.toLocaleString("fr-FR") + nbsp + CONFIG.devise;
+const $ = (id) => document.getElementById(id);
+
+/* ---------- Lever le voile ---------- */
+(function () {
+  const doc = $("heroDoc");
+  const btn = $("revealBtn");
+  btn.addEventListener("click", () => {
+    const on = doc.classList.toggle("revealed");
+    btn.setAttribute("aria-pressed", String(on));
+    btn.textContent = on ? "Remettre le voile" : "Lever le voile";
+  });
+})();
+
+/* ---------- Test de Kant ---------- */
+(function () {
+  const cas = [
+    {
+      label: "Je glisse une enveloppe pour passer en premier",
+      regle: "« Chacun paie pour passer devant. »",
+      texte: [
+        "Si tout le monde paie, plus personne ne passe devant : l'avantage disparaît et il ne reste que le coût. Les plus pauvres, qui ne peuvent pas payer, sont exclus de tout service.",
+        "La règle se détruit elle-même : on ne peut pas la vouloir comme loi universelle."
+      ],
+      ref: "Kant : l'impératif catégorique et le test d'universalisation."
+    },
+    {
+      label: "J'embauche mon cousin, c'est ma famille",
+      regle: "« On recrute d'abord ses proches, quelles que soient leurs compétences. »",
+      texte: [
+        "Si chaque responsable agissait ainsi, le mérite ne compterait plus et les institutions ne rempliraient plus leur mission.",
+        "Placez-vous de l'autre côté : voudriez-vous être soigné, jugé ou enseigné par quelqu'un choisi pour ses liens plutôt que pour son savoir ? Personne ne choisirait cette règle sans connaître d'avance sa propre place."
+      ],
+      ref: "Rawls : le voile d'ignorance."
+    },
+    {
+      label: "Je ferme les yeux sur une fraude, tout le monde le fait",
+      regle: "« On se tait devant une fraude. »",
+      texte: [
+        "« Tout le monde le fait » décrit ce qui est, pas ce qui doit être : on ne tire pas une norme d'un simple fait.",
+        "Si le silence devenait la règle, la fraude n'aurait plus aucun frein. Se taire n'est pas rester neutre : c'est déjà choisir."
+      ],
+      ref: "Hume : la distinction entre ce qui est et ce qui doit être."
+    }
+  ];
+
+  const list = $("cases");
+  const out = $("verdict");
+
+  cas.forEach((c, i) => {
+    const li = document.createElement("li");
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "case";
+    b.setAttribute("aria-pressed", "false");
+    b.textContent = c.label;
+    b.addEventListener("click", () => {
+      list.querySelectorAll(".case").forEach((x) => x.setAttribute("aria-pressed", "false"));
+      b.setAttribute("aria-pressed", "true");
+      out.classList.remove("empty");
+      out.innerHTML =
+        '<p class="rule">Si la règle devenait universelle : ' + c.regle + '</p>' +
+        c.texte.map((t) => "<p>" + t + "</p>").join("") +
+        '<p class="ref">' + c.ref + "</p>";
+    });
+    li.appendChild(b);
+    list.appendChild(li);
+  });
+})();
+
+/* ---------- Catalogue ---------- */
+(function () {
+  const ul = $("catalogue");
+  CONFIG.catalogue.forEach((p) => {
+    const lien = CONFIG.liens[p.cle] || "#";
+    if (lien === "#") console.warn("Lien de paiement à configurer pour : " + p.cle);
+    const li = document.createElement("li");
+    li.className = "row";
+    li.innerHTML =
+      "<div><h3></h3><p></p></div>" +
+      '<p class="prix"></p>' +
+      '<a class="btn"></a>';
+    li.querySelector("h3").textContent = p.titre;
+    li.querySelector("div p").textContent = p.desc;
+    const prix = li.querySelector(".prix");
+    prix.textContent = fmt(p.prix);
+    if (p.suffixe) {
+      const s = document.createElement("small");
+      s.textContent = " " + p.suffixe;
+      prix.appendChild(s);
+    }
+    const a = li.querySelector("a");
+    a.href = lien;
+    a.textContent = p.action;
+    ul.appendChild(li);
+  });
+})();
+
+/* ---------- Inscription e-mail ---------- */
+(function () {
+  const form = $("newsletter");
+  const msg = $("newsletterMsg");
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email = $("email");
+    if (!email.checkValidity()) {
+      msg.textContent = "Saisissez une adresse e-mail valide.";
+      email.focus();
+      return;
+    }
+    if (!CONFIG.formulaireUrl) {
+      const sujet = encodeURIComponent("Inscription à la liste nonalacorruption");
+      const corps = encodeURIComponent("Bonjour, je souhaite recevoir la fiche « Reconnaître la corruption » et les nouvelles ressources.\nMon adresse : " + email.value);
+      msg.textContent = "Votre messagerie s'ouvre : envoyez le message pour finaliser l'inscription.";
+      window.location.href = "mailto:" + CONFIG.email + "?subject=" + sujet + "&body=" + corps;
+      return;
+    }
+    try {
+      const res = await fetch(CONFIG.formulaireUrl, {
+        method: "POST",
+        headers: { "Accept": "application/json" },
+        body: new FormData(form)
+      });
+      if (!res.ok) throw new Error(res.status);
+      msg.textContent = "Merci ! Consultez votre boîte mail pour recevoir la fiche.";
+      form.reset();
+    } catch (err) {
+      msg.textContent = "L'inscription a échoué. Réessayez dans un instant.";
+    }
+  });
+})();
+
+/* ---------- Dons ---------- */
+(function () {
+  const ul = $("amounts");
+  const link = $("donLink");
+  if (CONFIG.liens.don === "#") console.warn("Lien de don à configurer.");
+  link.href = CONFIG.liens.don;
+
+  function choisir(n, btn) {
+    ul.querySelectorAll(".amount").forEach((x) => x.setAttribute("aria-pressed", "false"));
+    btn.setAttribute("aria-pressed", "true");
+    link.textContent = "Faire un don de " + fmt(n);
+    if (CONFIG.liens.don.endsWith("amount=")) link.href = CONFIG.liens.don + n;
+  }
+
+  CONFIG.dons.forEach((n, i) => {
+    const li = document.createElement("li");
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "amount";
+    b.setAttribute("aria-pressed", "false");
+    b.textContent = fmt(n);
+    b.addEventListener("click", () => choisir(n, b));
+    li.appendChild(b);
+    ul.appendChild(li);
+    if (i === 1) choisir(n, b);
+  });
+})();
+
+$("year").textContent = new Date().getFullYear();
+$("contactLink").href = "mailto:" + CONFIG.email;
+$("contactLink").textContent = CONFIG.email;
+</script>
+</body>
+</html>
