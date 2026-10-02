@@ -4,6 +4,7 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '0 8 * * *'
+      timezone: 'Africa/Abidjan'
 
 permissions:
   contents: write
@@ -16,35 +17,259 @@ jobs:
       - name: Récupérer le dépôt
         uses: actions/checkout@v4
 
-      - name: Vérifier le fonctionnement
-        run: |
-          echo "La veille quotidienne est activée."
-          echo "Date UTC : $(date -u '+%Y-%m-%d %H:%M:%S')"
+      - name: Installer Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
 
-      - name: Préparer le dossier du jour
+      - name: Rechercher les actualités récentes
         run: |
-          DATE=$(date -u '+%Y-%m-%d')
-          mkdir -p "actualite/$DATE"
+          python - <<'PY'
+          import urllib.request
+          import urllib.parse
+          import xml.etree.ElementTree as ET
+          import html
+          import os
+          import re
+          from datetime import datetime
+          from zoneinfo import ZoneInfo
 
-          cat > "actualite/$DATE/index.html" <<EOF
-          <!DOCTYPE html>
+          TZ = ZoneInfo("Africa/Abidjan")
+          now = datetime.now(TZ)
+          date = now.strftime("%Y-%m-%d")
+
+          os.makedirs(f"actualite/{date}", exist_ok=True)
+
+          queries = [
+              "corruption Côte d'Ivoire",
+              "corruption Afrique",
+              "corruption bribery investigation Africa",
+              "corruption public officials Africa",
+              "corruption enquête Côte d'Ivoire"
+          ]
+
+          articles = []
+          seen = set()
+
+          for query in queries:
+              url = (
+                  "https://news.google.com/rss/search?"
+                  + urllib.parse.urlencode({
+                      "q": query,
+                      "hl": "fr",
+                      "gl": "CI",
+                      "ceid": "CI:fr"
+                  })
+              )
+
+              try:
+                  request = urllib.request.Request(
+                      url,
+                      headers={"User-Agent": "Mozilla/5.0"}
+                  )
+
+                  with urllib.request.urlopen(request, timeout=20) as response:
+                      data = response.read()
+
+                  root = ET.fromstring(data)
+
+                  for item in root.findall(".//item"):
+                      title = item.findtext("title") or ""
+                      link = item.findtext("link") or ""
+                      pubdate = item.findtext("pubDate") or ""
+                      source = item.findtext("source") or ""
+
+                      title = html.unescape(title).strip()
+                      link = link.strip()
+                      source = html.unescape(source).strip()
+
+                      key = title.lower()
+
+                      if not title or not link or key in seen:
+                          continue
+
+                      seen.add(key)
+
+                      articles.append({
+                          "title": title,
+                          "link": link,
+                          "date": pubdate,
+                          "source": source
+                      })
+
+              except Exception as error:
+                  print(f"Flux inaccessible pour {query}: {error}")
+
+          # Limiter le nombre d'articles affichés
+          articles = articles[:20]
+
+          def escape(value):
+              return html.escape(value, quote=True)
+
+          cards = ""
+
+          if articles:
+              for article in articles:
+                  cards += f"""
+                  <article class="article">
+                    <h2>{escape(article['title'])}</h2>
+                    <p class="source">
+                      Source : {escape(article['source']) if article['source'] else 'Source indiquée dans le flux'}
+                    </p>
+                    <p class="date">
+                      Date : {escape(article['date'])}
+                    </p>
+                    <p>
+                      <strong>Statut éditorial :</strong>
+                      Information à vérifier.
+                    </p>
+                    <a href="{escape(article['link'])}" target="_blank" rel="noopener">
+                      Consulter la source
+                    </a>
+                  </article>
+                  """
+          else:
+              cards = """
+              <p>Aucune actualité n'a été récupérée lors de cette veille.</p>
+              """
+
+          page = f"""<!DOCTYPE html>
           <html lang="fr">
           <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Actualité corruption - $DATE</title>
+            <title>Actualité corruption - {date}</title>
+            <style>
+              body {{
+                font-family: Arial, sans-serif;
+                max-width: 900px;
+                margin: auto;
+                padding: 20px;
+                line-height: 1.6;
+                background: #f7f7f7;
+                color: #222;
+              }}
+              h1 {{
+                margin-bottom: 5px;
+              }}
+              .intro {{
+                background: white;
+                padding: 18px;
+                border-radius: 10px;
+                margin-bottom: 20px;
+              }}
+              .article {{
+                background: white;
+                padding: 20px;
+                margin-bottom: 18px;
+                border-radius: 10px;
+                box-shadow: 0 1px 5px rgba(0,0,0,.08);
+              }}
+              .article h2 {{
+                margin-top: 0;
+                font-size: 21px;
+              }}
+              .source, .date {{
+                color: #666;
+                font-size: 14px;
+              }}
+              a {{
+                font-weight: bold;
+              }}
+              .warning {{
+                background: #fff3cd;
+                padding: 12px;
+                border-radius: 8px;
+              }}
+            </style>
+          </head>
+
+          <body>
+
+            <h1>Actualité de la corruption</h1>
+            <p><strong>{date}</strong></p>
+
+            <section class="intro">
+              <h2>Veille quotidienne</h2>
+
+              <p>
+                Cette page rassemble des informations récentes repérées
+                dans les flux d'actualité concernant la corruption,
+                les soupçons de corruption, les enquêtes et les affaires
+                judiciaires.
+              </p>
+
+              <div class="warning">
+                <strong>Important :</strong>
+                la présence d'une information dans cette veille
+                ne signifie pas que les faits sont établis.
+                Les accusations, soupçons et enquêtes doivent être
+                distingués des décisions judiciaires définitives.
+              </div>
+            </section>
+
+            {cards}
+
+            <p>
+              <a href="../">← Retour aux actualités</a>
+            </p>
+
+          </body>
+          </html>
+          """
+
+          with open(f"actualite/{date}/index.html", "w", encoding="utf-8") as file:
+              file.write(page)
+
+          # Créer ou mettre à jour l'index général
+          os.makedirs("actualite", exist_ok=True)
+
+          folders = sorted(
+              [
+                  name for name in os.listdir("actualite")
+                  if re.fullmatch(r"\d{{4}}-\d{{2}}-\d{{2}}", name)
+              ],
+              reverse=True
+          )
+
+          links = "\n".join(
+              f'<li><a href="{folder}/">{folder}</a></li>'
+              for folder in folders
+          )
+
+          archive = f"""<!DOCTYPE html>
+          <html lang="fr">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Actualité - Non à la corruption</title>
           </head>
           <body>
             <h1>Actualité corruption</h1>
-            <p><strong>Date :</strong> $DATE</p>
-            <p>La veille quotidienne est active.</p>
-            <p>Les informations vérifiées seront publiées dans cette rubrique.</p>
-            <p><a href="../">Retour aux actualités</a></p>
+
+            <p>
+              Retrouvez ici les différentes éditions quotidiennes
+              de notre veille.
+            </p>
+
+            <ul>
+              {links}
+            </ul>
+
+            <p>
+              <a href="../">← Retour à l'accueil</a>
+            </p>
           </body>
           </html>
-          EOF
+          """
 
-      - name: Enregistrer la publication
+          with open("actualite/index.html", "w", encoding="utf-8") as file:
+              file.write(archive)
+
+          print(f"Veille terminée : {len(articles)} information(s) récupérée(s).")
+          PY
+
+      - name: Publier les résultats
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -52,8 +277,8 @@ jobs:
           git add actualite/
 
           if git diff --cached --quiet; then
-            echo "Aucune modification à publier."
+            echo "Aucune nouvelle publication."
           else
-            git commit -m "Publication actualité du $(date -u '+%Y-%m-%d')"
+            git commit -m "Publication veille corruption $(date -u '+%Y-%m-%d')"
             git push
           fi
