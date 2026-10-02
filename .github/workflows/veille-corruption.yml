@@ -1,0 +1,59 @@
+name: Veille corruption quotidienne
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 8 * * *'
+
+permissions:
+  contents: write
+
+jobs:
+  veille:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Récupérer le dépôt
+        uses: actions/checkout@v4
+
+      - name: Vérifier le fonctionnement
+        run: |
+          echo "La veille quotidienne est activée."
+          echo "Date UTC : $(date -u '+%Y-%m-%d %H:%M:%S')"
+
+      - name: Préparer le dossier du jour
+        run: |
+          DATE=$(date -u '+%Y-%m-%d')
+          mkdir -p "actualite/$DATE"
+
+          cat > "actualite/$DATE/index.html" <<EOF
+          <!DOCTYPE html>
+          <html lang="fr">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Actualité corruption - $DATE</title>
+          </head>
+          <body>
+            <h1>Actualité corruption</h1>
+            <p><strong>Date :</strong> $DATE</p>
+            <p>La veille quotidienne est active.</p>
+            <p>Les informations vérifiées seront publiées dans cette rubrique.</p>
+            <p><a href="../">Retour aux actualités</a></p>
+          </body>
+          </html>
+          EOF
+
+      - name: Enregistrer la publication
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add actualite/
+
+          if git diff --cached --quiet; then
+            echo "Aucune modification à publier."
+          else
+            git commit -m "Publication actualité du $(date -u '+%Y-%m-%d')"
+            git push
+          fi
