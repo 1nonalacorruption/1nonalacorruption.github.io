@@ -22,7 +22,7 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Rechercher les actualités récentes
+      - name: Rechercher et classer les actualités
         run: |
           python - <<'PY'
           import urllib.request
@@ -42,16 +42,19 @@ jobs:
 
           queries = [
               "corruption Côte d'Ivoire",
+              "corruption Côte d'Ivoire enquête",
+              "corruption Côte d'Ivoire condamnation",
               "corruption Afrique",
               "corruption bribery investigation Africa",
               "corruption public officials Africa",
-              "corruption enquête Côte d'Ivoire"
+              "corruption enquête Afrique"
           ]
 
           articles = []
           seen = set()
 
           for query in queries:
+
               url = (
                   "https://news.google.com/rss/search?"
                   + urllib.parse.urlencode({
@@ -63,17 +66,25 @@ jobs:
               )
 
               try:
+
                   request = urllib.request.Request(
                       url,
-                      headers={"User-Agent": "Mozilla/5.0"}
+                      headers={
+                          "User-Agent": "Mozilla/5.0"
+                      }
                   )
 
-                  with urllib.request.urlopen(request, timeout=20) as response:
+                  with urllib.request.urlopen(
+                      request,
+                      timeout=20
+                  ) as response:
+
                       data = response.read()
 
                   root = ET.fromstring(data)
 
                   for item in root.findall(".//item"):
+
                       title = item.findtext("title") or ""
                       link = item.findtext("link") or ""
                       pubdate = item.findtext("pubDate") or ""
@@ -98,158 +109,425 @@ jobs:
                       })
 
               except Exception as error:
-                  print(f"Flux inaccessible pour {query}: {error}")
 
-          # Limiter le nombre d'articles affichés
+                  print(
+                      f"Flux inaccessible pour {query}: {error}"
+                  )
+
           articles = articles[:20]
 
+          def classify(title):
+
+              text = title.lower()
+
+              official_words = [
+                  "condamné",
+                  "condamnee",
+                  "condamnation",
+                  "jugé coupable",
+                  "jugée coupable",
+                  "reconnu coupable",
+                  "reconnue coupable",
+                  "sentence",
+                  "sentenced",
+                  "convicted",
+                  "guilty",
+                  "verdict",
+                  "arrêt de la cour",
+                  "décision judiciaire"
+              ]
+
+              investigation_words = [
+                  "enquête",
+                  "enquetes",
+                  "enquête ouverte",
+                  "investigation",
+                  "investigations",
+                  "accusé",
+                  "accusée",
+                  "accusation",
+                  "soupçon",
+                  "soupçonné",
+                  "soupçonnée",
+                  "suspecté",
+                  "suspectée",
+                  "alleged",
+                  "allegation",
+                  "probe",
+                  "under investigation"
+              ]
+
+              context_words = [
+                  "rapport",
+                  "rapport annuel",
+                  "indice",
+                  "transparence",
+                  "prévention",
+                  "lutte contre la corruption",
+                  "anti-corruption",
+                  "anticorruption",
+                  "gouvernance"
+              ]
+
+              if any(word in text for word in official_words):
+                  return (
+                      "🟡 Décision officielle à vérifier",
+                      "decision"
+                  )
+
+              if any(word in text for word in investigation_words):
+                  return (
+                      "🟠 Enquête / allégation",
+                      "investigation"
+                  )
+
+              if any(word in text for word in context_words):
+                  return (
+                      "🔵 Information / contexte",
+                      "context"
+                  )
+
+              return (
+                  "⚪ À vérifier",
+                  "verify"
+              )
+
           def escape(value):
-              return html.escape(value, quote=True)
+              return html.escape(
+                  value,
+                  quote=True
+              )
 
           cards = ""
 
           if articles:
+
               for article in articles:
+
+                  status, status_type = classify(
+                      article["title"]
+                  )
+
                   cards += f"""
                   <article class="article">
-                    <h2>{escape(article['title'])}</h2>
-                    <p class="source">
-                      Source : {escape(article['source']) if article['source'] else 'Source indiquée dans le flux'}
+
+                    <div class="status {status_type}">
+                      {escape(status)}
+                    </div>
+
+                    <h2>
+                      {escape(article["title"])}
+                    </h2>
+
+                    <p class="meta">
+                      <strong>Source :</strong>
+                      {escape(article["source"])
+                      if article["source"]
+                      else "Source indiquée dans le flux"}
                     </p>
-                    <p class="date">
-                      Date : {escape(article['date'])}
+
+                    <p class="meta">
+                      <strong>Date :</strong>
+                      {escape(article["date"])}
                     </p>
+
                     <p>
-                      <strong>Statut éditorial :</strong>
-                      Information à vérifier.
+                      Cette information a été détectée
+                      automatiquement dans un flux d'actualité.
+                      Son statut doit être vérifié à partir
+                      de la source originale.
                     </p>
-                    <a href="{escape(article['link'])}" target="_blank" rel="noopener">
-                      Consulter la source
+
+                    <a
+                      href="{escape(article["link"])}"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Consulter la source originale →
                     </a>
+
                   </article>
                   """
+
           else:
+
               cards = """
-              <p>Aucune actualité n'a été récupérée lors de cette veille.</p>
+              <p>
+                Aucune actualité n'a été récupérée
+                lors de cette veille.
+              </p>
               """
 
           page = f"""<!DOCTYPE html>
+
           <html lang="fr">
+
           <head>
+
             <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Actualité corruption - {date}</title>
+
+            <meta
+              name="viewport"
+              content="width=device-width, initial-scale=1.0"
+            >
+
+            <title>
+              Actualité corruption - {date}
+            </title>
+
             <style>
+
               body {{
-                font-family: Arial, sans-serif;
-                max-width: 900px;
+                font-family:
+                  Arial,
+                  Helvetica,
+                  sans-serif;
+
+                max-width: 950px;
+
                 margin: auto;
+
                 padding: 20px;
+
                 line-height: 1.6;
-                background: #f7f7f7;
+
+                background: #f5f5f5;
+
                 color: #222;
               }}
+
               h1 {{
                 margin-bottom: 5px;
               }}
+
               .intro {{
                 background: white;
-                padding: 18px;
-                border-radius: 10px;
-                margin-bottom: 20px;
-              }}
-              .article {{
-                background: white;
+
                 padding: 20px;
-                margin-bottom: 18px;
+
                 border-radius: 10px;
-                box-shadow: 0 1px 5px rgba(0,0,0,.08);
+
+                margin-bottom: 25px;
               }}
-              .article h2 {{
-                margin-top: 0;
-                font-size: 21px;
-              }}
-              .source, .date {{
-                color: #666;
-                font-size: 14px;
-              }}
-              a {{
-                font-weight: bold;
-              }}
+
               .warning {{
                 background: #fff3cd;
-                padding: 12px;
+
+                padding: 15px;
+
                 border-radius: 8px;
+
+                border-left: 5px solid #f0ad4e;
               }}
+
+              .article {{
+                background: white;
+
+                padding: 20px;
+
+                margin-bottom: 20px;
+
+                border-radius: 10px;
+
+                box-shadow:
+                  0 1px 6px
+                  rgba(0,0,0,.08);
+              }}
+
+              .article h2 {{
+                margin-top: 12px;
+
+                font-size: 21px;
+              }}
+
+              .meta {{
+                color: #666;
+
+                font-size: 14px;
+              }}
+
+              .status {{
+                display: inline-block;
+
+                padding: 6px 10px;
+
+                border-radius: 6px;
+
+                font-weight: bold;
+
+                font-size: 14px;
+              }}
+
+              .decision {{
+                background: #fff3cd;
+              }}
+
+              .investigation {{
+                background: #ffe0b2;
+              }}
+
+              .context {{
+                background: #d9edf7;
+              }}
+
+              .verify {{
+                background: #eeeeee;
+              }}
+
+              a {{
+                font-weight: bold;
+
+                text-decoration: none;
+              }}
+
+              .footer {{
+                margin-top: 30px;
+
+                padding-top: 20px;
+
+                border-top: 1px solid #ddd;
+
+                color: #666;
+              }}
+
             </style>
+
           </head>
 
           <body>
 
-            <h1>Actualité de la corruption</h1>
-            <p><strong>{date}</strong></p>
+            <h1>
+              Actualité de la corruption
+            </h1>
+
+            <p>
+              <strong>
+                Édition du {date}
+              </strong>
+            </p>
 
             <section class="intro">
-              <h2>Veille quotidienne</h2>
+
+              <h2>
+                Veille quotidienne
+              </h2>
 
               <p>
-                Cette page rassemble des informations récentes repérées
-                dans les flux d'actualité concernant la corruption,
-                les soupçons de corruption, les enquêtes et les affaires
-                judiciaires.
+                Cette page rassemble des informations
+                récentes relatives à la corruption,
+                aux enquêtes, aux accusations,
+                aux décisions judiciaires et à la
+                gouvernance.
               </p>
 
               <div class="warning">
-                <strong>Important :</strong>
-                la présence d'une information dans cette veille
-                ne signifie pas que les faits sont établis.
-                Les accusations, soupçons et enquêtes doivent être
-                distingués des décisions judiciaires définitives.
+
+                <strong>
+                  Important :
+                </strong>
+
+                la classification affichée est
+                automatique et préliminaire.
+
+                Une accusation, un soupçon ou une
+                enquête ne constitue pas en soi une
+                preuve de culpabilité.
+
+                Les décisions officielles doivent
+                être vérifiées auprès des sources
+                compétentes.
+
               </div>
+
             </section>
 
             {cards}
 
-            <p>
-              <a href="../">← Retour aux actualités</a>
-            </p>
+            <div class="footer">
+
+              <p>
+                <a href="../">
+                  ← Retour aux actualités
+                </a>
+              </p>
+
+              <p>
+                Non à la corruption —
+                Comprendre, reconnaître et refuser
+                la corruption.
+              </p>
+
+            </div>
 
           </body>
+
           </html>
           """
 
-          with open(f"actualite/{date}/index.html", "w", encoding="utf-8") as file:
+          with open(
+              f"actualite/{date}/index.html",
+              "w",
+              encoding="utf-8"
+          ) as file:
+
               file.write(page)
 
-          # Créer ou mettre à jour l'index général
-          os.makedirs("actualite", exist_ok=True)
+          os.makedirs(
+              "actualite",
+              exist_ok=True
+          )
 
           folders = sorted(
               [
-                  name for name in os.listdir("actualite")
-                  if re.fullmatch(r"\d{{4}}-\d{{2}}-\d{{2}}", name)
+                  name
+                  for name in os.listdir("actualite")
+                  if re.fullmatch(
+                      r"\d{4}-\d{2}-\d{2}",
+                      name
+                  )
               ],
               reverse=True
           )
 
           links = "\n".join(
-              f'<li><a href="{folder}/">{folder}</a></li>'
+              f"""
+              <li>
+                <a href="{folder}/">
+                  Édition du {folder}
+                </a>
+              </li>
+              """
               for folder in folders
           )
 
           archive = f"""<!DOCTYPE html>
+
           <html lang="fr">
+
           <head>
+
             <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Actualité - Non à la corruption</title>
+
+            <meta
+              name="viewport"
+              content="width=device-width, initial-scale=1.0"
+            >
+
+            <title>
+              Actualité - Non à la corruption
+            </title>
+
           </head>
+
           <body>
-            <h1>Actualité corruption</h1>
+
+            <h1>
+              Actualité corruption
+            </h1>
 
             <p>
-              Retrouvez ici les différentes éditions quotidiennes
-              de notre veille.
+              Retrouvez ici les différentes
+              éditions quotidiennes de notre veille.
             </p>
 
             <ul>
@@ -257,16 +535,29 @@ jobs:
             </ul>
 
             <p>
-              <a href="../">← Retour à l'accueil</a>
+              <a href="../">
+                ← Retour à l'accueil
+              </a>
             </p>
+
           </body>
+
           </html>
           """
 
-          with open("actualite/index.html", "w", encoding="utf-8") as file:
+          with open(
+              "actualite/index.html",
+              "w",
+              encoding="utf-8"
+          ) as file:
+
               file.write(archive)
 
-          print(f"Veille terminée : {len(articles)} information(s) récupérée(s).")
+          print(
+              f"Veille terminée : "
+              f"{len(articles)} information(s) récupérée(s)."
+          )
+
           PY
 
       - name: Publier les résultats
@@ -279,6 +570,6 @@ jobs:
           if git diff --cached --quiet; then
             echo "Aucune nouvelle publication."
           else
-            git commit -m "Publication veille corruption $(date -u '+%Y-%m-%d')"
+            git commit -m "Amélioration de la veille corruption $(date -u '+%Y-%m-%d')"
             git push
           fi
